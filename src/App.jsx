@@ -6,11 +6,9 @@ import {
 } from "@heroicons/react/16/solid";
 import { useEffect, useState } from "react";
 
-
 export default function App() {
-
-  
   const [showDetails, setShowDetails] = useState(false);
+  console.log("🚀 ~ App ~ showDetails:", showDetails);
   const [orderId, setOrderId] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -38,15 +36,13 @@ export default function App() {
     }
   };
 
-   useEffect(() => {
+  useEffect(() => {
     const status = detailOrder?.fulfillments?.[0]?.shipment_status;
     setCurrentStep(getStepFromStatus(status));
   }, [detailOrder]);
 
-  
-  
-  console.log(  detailOrder.fulfillments?.[0]?.shipment_status);
-  
+  console.log(detailOrder.fulfillments?.[0]?.shipment_status);
+
   const handleTrack = async (e) => {
     e.preventDefault();
 
@@ -70,28 +66,36 @@ export default function App() {
     if (Object.keys(newErrors).length === 0) {
       setLoading(true);
       try {
-        const res = await fetch("https://api.numaquitas.com/v1/shopify/track-order?", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderNumber: orderId, email: email, configId: "68d6a9c6240e94756f608b0c" }),
-        });
+        const res = await fetch(
+          "https://api.numaquitas.com/v1/shopify/track-order?",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              orderNumber: orderId,
+              email: email,
+              configId: "68d6a9c6240e94756f608b0c",
+            }),
+          }
+        );
 
         const data = await res.json();
 
-        setOrderDetails(data);
-        console.log(data?.orderNumber);
-        
-        setShowDetails(true);
+        if (res.ok && data) {
+          // ✅ API thành công
+          setOrderDetails(data);
+          console.log(data?.orderNumber);
+          setShowDetails(true);
+        } else {
+          // ❌ API trả về lỗi hoặc không có dữ liệu
+          alert("Order not found. Please check your email and order number.");
+        }
       } catch (err) {
         console.error("Error:", err);
         alert("Failed to fetch order details");
       } finally {
         setLoading(false);
       }
-      setTimeout(() => {
-        setShowDetails(true);
-        setLoading(false);
-      }, 2000);
     }
   };
 
@@ -214,7 +218,9 @@ export default function App() {
                   </svg>
                 </button>
                 <div>
-                  <h1 className="text-xl font-semibold">Order {detailOrder?.order_number}</h1>
+                  <h1 className="text-xl font-semibold">
+                    Order {detailOrder?.order_number}
+                  </h1>
                   <p className="text-gray-500 text-sm">Confirmed Sep 23</p>
                 </div>
               </div>
@@ -234,7 +240,7 @@ export default function App() {
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:underline"
                         >
-                            {detailOrder?.fulfillments?.[0]?.tracking_number}
+                          {detailOrder?.fulfillments?.[0]?.tracking_number}
                         </a>
                       </p>
                     </div>
@@ -307,17 +313,25 @@ export default function App() {
                       <h3 className="font-semibold mb-2">
                         Contact information
                       </h3>
-                      <p>{detailOrder?.shipping_address?.first_name} {detailOrder?.shipping_address?.last_name}</p>
-                      <p className="text-gray-600">
-                        {detailOrder.email}
+                      <p>
+                        {detailOrder?.shipping_address?.first_name}{" "}
+                        {detailOrder?.shipping_address?.last_name}
                       </p>
+                      <p className="text-gray-600">{detailOrder.email}</p>
 
                       <h3 className="font-semibold mt-4 mb-2">
                         Shipping address
                       </h3>
-                      <p>{detailOrder?.shipping_address?.first_name} {detailOrder?.shipping_address?.last_name}</p>
+                      <p>
+                        {detailOrder?.shipping_address?.first_name}{" "}
+                        {detailOrder?.shipping_address?.last_name}
+                      </p>
                       <p>{detailOrder?.shipping_address?.address1}</p>
-                      <p>{detailOrder?.shipping_address?.city} {detailOrder?.shipping_address?.province} {detailOrder?.shipping_address?.zip}</p>
+                      <p>
+                        {detailOrder?.shipping_address?.city}{" "}
+                        {detailOrder?.shipping_address?.province}{" "}
+                        {detailOrder?.shipping_address?.zip}
+                      </p>
                       <p>{detailOrder?.shipping_address?.country}</p>
 
                       <h3 className="font-semibold mt-4 mb-2">
@@ -335,9 +349,16 @@ export default function App() {
                       <h3 className="font-semibold mt-4 mb-2">
                         Billing address
                       </h3>
-                      <p>{detailOrder?.shipping_address?.first_name} {detailOrder?.shipping_address?.last_name}</p>
+                      <p>
+                        {detailOrder?.shipping_address?.first_name}{" "}
+                        {detailOrder?.shipping_address?.last_name}
+                      </p>
                       <p>{detailOrder?.shipping_address?.address1}</p>
-                      <p>{detailOrder?.shipping_address?.city} {detailOrder?.shipping_address?.province} {detailOrder?.shipping_address?.zip}</p>
+                      <p>
+                        {detailOrder?.shipping_address?.city}{" "}
+                        {detailOrder?.shipping_address?.province}{" "}
+                        {detailOrder?.shipping_address?.zip}
+                      </p>
                       <p>{detailOrder?.shipping_address?.country}</p>
                     </div>
                   </div>
@@ -386,4 +407,3 @@ export default function App() {
     </div>
   );
 }
-
