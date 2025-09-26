@@ -235,7 +235,7 @@ export default function App() {
                       <p className="text-sm text-black-600 ">
                         UPS{" "}
                         <a
-                          href={`https://www.ups.com/track?tracknum=${detailOrder?.fulfillments?.[0]?.tracking_number}`}
+                          href={detailOrder?.fulfillments?.[0]?.tracking_url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:underline"
