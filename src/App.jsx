@@ -4,21 +4,49 @@ import {
   MapIcon,
   MapPinIcon,
 } from "@heroicons/react/16/solid";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 
 export default function App() {
+
+  
   const [showDetails, setShowDetails] = useState(false);
   const [orderId, setOrderId] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [detailOrder, setOrderDetails] = useState({});
   const steps = [
     { id: 1, label: "Confirmed", date: "Sep 23" },
     { id: 2, label: "On its way", date: "Sep 23" },
     { id: 3, label: "Out for delivery", date: "Sep 24" },
     { id: 4, label: "Delivered", date: "Sep 24" },
   ];
-  const [currentStep, setCurrentStep] = useState(2);
+  const [currentStep, setCurrentStep] = useState(1);
+
+  // Hàm map shipment_status sang stepId
+  const getStepFromStatus = (status) => {
+    switch (status) {
+      case "in_transit":
+        return 2;
+      case "delivered": // (có thể Shopify trả về "delivered", bạn check lại)
+        return 3;
+      case "complete":
+        return 4;
+      default:
+        return 1; // mặc định hoặc rỗng
+    }
+  };
+
+   useEffect(() => {
+    const status = detailOrder?.fulfillments?.[0]?.shipment_status;
+    setCurrentStep(getStepFromStatus(status));
+  }, [detailOrder]);
+
+  
+  
+  console.log(  detailOrder.fulfillments?.[0]?.shipment_status);
+  
   const handleTrack = async (e) => {
     e.preventDefault();
 
@@ -42,15 +70,17 @@ export default function App() {
     if (Object.keys(newErrors).length === 0) {
       setLoading(true);
       try {
-        const res = await fetch("http://localhost:3000/api/order", {
+        const res = await fetch("https://api.numaquitas.com/v1/shopify/track-order?", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderId, email }),
+          body: JSON.stringify({ orderNumber: orderId, email: email, configId: "68d6a9c6240e94756f608b0c" }),
         });
 
         const data = await res.json();
-        console.log("Order data:", data); // 👉 test log ra trước
+
         setOrderDetails(data);
+        console.log(data?.orderNumber);
+        
         setShowDetails(true);
       } catch (err) {
         console.error("Error:", err);
@@ -184,7 +214,7 @@ export default function App() {
                   </svg>
                 </button>
                 <div>
-                  <h1 className="text-xl font-semibold">Order #1001</h1>
+                  <h1 className="text-xl font-semibold">Order {detailOrder?.order_number}</h1>
                   <p className="text-gray-500 text-sm">Confirmed Sep 23</p>
                 </div>
               </div>
@@ -199,12 +229,12 @@ export default function App() {
                       <p className="text-sm text-black-600 ">
                         UPS{" "}
                         <a
-                          href={`https://www.ups.com/track?tracknum=1Z3018X90387388691`}
+                          href={`https://www.ups.com/track?tracknum=${detailOrder?.fulfillments?.[0]?.tracking_number}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:underline"
                         >
-                          1Z3018X90387388691
+                            {detailOrder?.fulfillments?.[0]?.tracking_number}
                         </a>
                       </p>
                     </div>
@@ -277,18 +307,18 @@ export default function App() {
                       <h3 className="font-semibold mb-2">
                         Contact information
                       </h3>
-                      <p>Oliver Murphy</p>
+                      <p>{detailOrder?.shipping_address?.first_name} {detailOrder?.shipping_address?.last_name}</p>
                       <p className="text-gray-600">
-                        olivermurphy2511@gmail.com
+                        {detailOrder.email}
                       </p>
 
                       <h3 className="font-semibold mt-4 mb-2">
                         Shipping address
                       </h3>
-                      <p>Oliver Murphy</p>
-                      <p>9921 NW Englemann St</p>
-                      <p>Portland Oregon 97229</p>
-                      <p>United States</p>
+                      <p>{detailOrder?.shipping_address?.first_name} {detailOrder?.shipping_address?.last_name}</p>
+                      <p>{detailOrder?.shipping_address?.address1}</p>
+                      <p>{detailOrder?.shipping_address?.city} {detailOrder?.shipping_address?.province} {detailOrder?.shipping_address?.zip}</p>
+                      <p>{detailOrder?.shipping_address?.country}</p>
 
                       <h3 className="font-semibold mt-4 mb-2">
                         Shipping method
@@ -305,10 +335,10 @@ export default function App() {
                       <h3 className="font-semibold mt-4 mb-2">
                         Billing address
                       </h3>
-                      <p>Oliver Murphy</p>
-                      <p>9921 NW Englemann St</p>
-                      <p>Portland Oregon 97229</p>
-                      <p>United States</p>
+                      <p>{detailOrder?.shipping_address?.first_name} {detailOrder?.shipping_address?.last_name}</p>
+                      <p>{detailOrder?.shipping_address?.address1}</p>
+                      <p>{detailOrder?.shipping_address?.city} {detailOrder?.shipping_address?.province} {detailOrder?.shipping_address?.zip}</p>
+                      <p>{detailOrder?.shipping_address?.country}</p>
                     </div>
                   </div>
                 </div>
@@ -356,3 +386,4 @@ export default function App() {
     </div>
   );
 }
+
