@@ -27,7 +27,7 @@ export default function App() {
     switch (status) {
       case "in_transit":
         return 2;
-      case "delivered": // (có thể Shopify trả về "delivered", bạn check lại)
+      case "delivered": 
         return 3;
       case "complete":
         return 4;
@@ -280,7 +280,7 @@ export default function App() {
                             >
                               {step.label}
                             </p>
-                            <p className="text-xs text-gray-500">{step.date}</p>
+                            {/* <p className="text-xs text-gray-500">{step.date}</p> */}
                           </div>
                         </div>
                       ))}
