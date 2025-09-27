@@ -1,8 +1,10 @@
 import {
   CheckCircleIcon,
   CircleStackIcon,
+  HomeIcon,
   MapIcon,
   MapPinIcon,
+  TruckIcon,
 } from "@heroicons/react/16/solid";
 import { useEffect, useState } from "react";
 
@@ -15,10 +17,10 @@ export default function App() {
   const [errors, setErrors] = useState({});
   const [detailOrder, setOrderDetails] = useState({});
   const steps = [
-    { id: 1, label: "Confirmed", date: "Sep 23" },
-    { id: 2, label: "On its way", date: "Sep 23" },
-    { id: 3, label: "Out for delivery", date: "Sep 24" },
-    { id: 4, label: "Delivered", date: "Sep 24" },
+    { id: 1, label: "Confirmed", date: "Sep 23", icon: CheckCircleIcon },
+    { id: 2, label: "On its way", date: "Sep 23", icon: TruckIcon },
+    { id: 3, label: "Out for delivery", date: "Sep 24", icon: MapPinIcon },
+    { id: 4, label: "Delivered", date: "Sep 24", icon: HomeIcon },
   ];
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -246,46 +248,48 @@ export default function App() {
                     </div>
 
                     {/* Timeline */}
-                    <div className="ml-2 mt-4">
-                      {steps.map((step, index) => (
-                        <div
-                          key={step.id}
-                          className="relative flex items-start"
-                        >
-                          {/* Dot + Line */}
-                          <div className="flex flex-col items-center mr-4">
-                            {/* Container cố định size */}
-                            <div className="w-5 h-5 flex items-center justify-center">
-                              {step.id === currentStep ? (
-                                <MapPinIcon className="w-5 h-5 text-green-500" />
-                              ) : (
-                                <span className="w-2 h-2 bg-gray-400 rounded-full block"></span>
-                              )}
-                            </div>
+<div className="ml-2 mt-4">
+  {steps.map((step, index) => {
+    const Icon = step.icon;
+    const isCompleted = step.id < currentStep; // đã qua
+    const isCurrent = step.id === currentStep; // hiện tại
 
-                            {/* Line nối xuống */}
-                            {index !== steps.length - 1 && (
-                              <div className="h-10 w-px border-l-2 border-dotted border-gray-300"></div>
-                            )}
-                          </div>
+    return (
+      <div key={step.id} className="relative flex items-start">
+        <div className="flex flex-col items-center mr-4">
+          {/* Icon hoặc chấm */}
+          <div className="w-6 h-6 flex items-center justify-center">
+            {isCurrent || isCompleted ? (
+              <Icon
+                className={`w-4 h-4 ${
+                  isCurrent ? "text-green-500" : "text-green-400"
+                }`}
+              />
+            ) : (
+              <span className="w-2 h-2 bg-gray-400 rounded-full block"></span>
+            )}
+          </div>
 
-                          {/* Nội dung */}
-                          <div className="pb-6">
-                            <p
-                              className={`text-sm font-medium ${
-                                step.id === currentStep
-                                  ? "text-green-600"
-                                  : "text-gray-700"
-                              }`}
-                            >
-                              {step.label}
-                            </p>
-                            {/* <p className="text-xs text-gray-500">{step.date}</p> */}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+          {/* Line nối xuống */}
+          {index !== steps.length - 1 && (
+            <div className="h-10 w-px border-l-2 border-dotted border-gray-300"></div>
+          )}
+        </div>
 
+        {/* Nội dung */}
+        <div className="pb-6">
+          <p
+            className={`text-sm font-medium ${
+              isCurrent ? "text-green-600" : "text-gray-700"
+            }`}
+          >
+            {step.label}
+          </p>
+        </div>
+      </div>
+    );
+  })}
+</div>
                     {/* <button className="mt-4 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition">
                       Track order with Shop
                     </button> */}
